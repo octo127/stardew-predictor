@@ -64,16 +64,52 @@ window.onload = function () {
 		return 0;
 	}
 
+	function jaName(item) {
+		// Returns the official Japanese display name for an English item name, or null when unknown.
+		// Falls back to translating the base name of parenthesized variants such as
+		// "Large Egg (Brown)" or "Rarecrow (Snowman)".
+		if (typeof JA_NAMES === 'undefined') { return null; }
+		if (JA_NAMES.hasOwnProperty(item)) { return JA_NAMES[item]; }
+		var m = item.match(/^(.*?)( \([^)]+\))$/);
+		if (m && JA_NAMES.hasOwnProperty(m[1])) {
+			var suffix = m[2].replace('(White)', '(白)').replace('(Brown)', '(茶)').replace('(Any)', '(色問わず)');
+			return JA_NAMES[m[1]] + suffix;
+		}
+		return null;
+	}
+
+	function jaSearchToEnglish(query) {
+		// Allow searching by Japanese name: expand a query containing Japanese characters
+		// into a regexp alternation of every English name whose Japanese name matches it.
+		if (typeof JA_NAMES === 'undefined' || !/[぀-ヿ㐀-鿿]/.test(query)) { return query; }
+		var names = [];
+		for (var en in JA_NAMES) {
+			if (JA_NAMES.hasOwnProperty(en) && JA_NAMES[en].indexOf(query) !== -1) {
+				names.push(en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+			}
+		}
+		return names.length ? ('(?:' + names.join('|') + ')') : query;
+	}
+
 	function wikify(item, page) {
 		// removing egg colors & quantity amounts; changing spaces to underscores
 		if (typeof(item) == "undefined") { return "undefined"; }
-		var trimmed = item.replace(' (White)', '');
-		trimmed = trimmed.replace(' (Brown)', '');
-		trimmed = trimmed.replace(' (Any)', '');
-		trimmed = trimmed.replace(/ \(\d+\)/, '');
-		trimmed = trimmed.replace(/ /g, '_');
-		return (page) ? ('<a href="https://stardewvalleywiki.com/' + page + '#' + trimmed + '">' + item + '</a>') :
-					('<a href="https://stardewvalleywiki.com/' + trimmed + '">' + item + '</a>');
+		var base = item.replace(' (White)', '');
+		base = base.replace(' (Brown)', '');
+		base = base.replace(' (Any)', '');
+		base = base.replace(/ \(\d+\)/, '');
+		var trimmed = base.replace(/ /g, '_');
+		var ja = jaName(item);
+		var display = (ja !== null) ? ja : item;
+		if (page) {
+			// Anchored links target English wiki section names, so keep the English wiki.
+			return '<a href="https://stardewvalleywiki.com/' + page + '#' + trimmed + '">' + display + '</a>';
+		}
+		if (ja !== null) {
+			// Japanese wiki pages are named with the official Japanese item names.
+			return '<a href="https://ja.stardewvalleywiki.com/' + (jaName(base) || display) + '">' + display + '</a>';
+		}
+		return '<a href="https://stardewvalleywiki.com/' + trimmed + '">' + display + '</a>';
 	}
 
 	// Wrapper function to check URL parameters and change save properties if they are set
@@ -4699,7 +4735,7 @@ window.onload = function () {
 			$('#cart-reset').html("Clear Search Results &amp; Reset Browsing");
 			// Note we are using the regexp matcher due to wanting to ignore case. The table header references offset still
 			// so that it appears exactly as was typed in by the user.
-			searchTerm = new RegExp(offset, "i");
+			searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			searchStart = ($('#cart-search-all').prop('checked')) ? 0 : 7 * Math.floor((save.daysPlayed - 1) / 7);
 			searchEnd = 112 * $('#cart-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="4">Search results for &quot;' + offset + '&quot; over the ' +
@@ -5108,7 +5144,7 @@ window.onload = function () {
 			$('#cart-reset').html("Clear Search Results &amp; Reset Browsing");
 			// Note we are using the regexp matcher due to wanting to ignore case. The table header references offset still
 			// so that it appears exactly as was typed in by the user.
-			searchTerm = new RegExp(offset, "i");
+			searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			searchStart = ($('#cart-search-all').prop('checked')) ? 0 : 7 * Math.floor((save.daysPlayed - 1) / 7);
 			searchEnd = 112 * $('#cart-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="4">Search results for &quot;' + offset + '&quot; over the ' +
@@ -5565,7 +5601,7 @@ window.onload = function () {
 			$('#krobus-reset').html("Clear Search Results &amp; Reset Browsing");
 			// Note we are using the regexp matcher due to wanting to ignore case. The table header references offset still
 			// so that it appears exactly as was typed in by the user.
-			searchTerm = new RegExp(offset, "i");
+			searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			searchStart = ($('#krobus-search-all').prop('checked')) ? 0 : 7 * Math.floor((save.daysPlayed - 1) / 7);
 			searchEnd = 112 * $('#krobus-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="4">Search results for &quot;' + offset + '&quot; over the ' +
@@ -5730,7 +5766,7 @@ window.onload = function () {
 			$('#sandy-reset').html("Clear Search Results &amp; Reset Browsing");
 			// Note we are using the regexp matcher due to wanting to ignore case. The table header references offset still
 			// so that it appears exactly as was typed in by the user.
-			searchTerm = new RegExp(offset, "i");
+			searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			searchStart = ($('#sandy-search-all').prop('checked')) ? 1 : 7 * Math.floor((save.daysPlayed - 1) / 7);
 			searchEnd = 112 * $('#sandy-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="3">Search results for &quot;' + offset + '&quot; over the ' +
@@ -5918,7 +5954,7 @@ window.onload = function () {
 			$('#geode-reset').html("Clear Search Results &amp; Reset Browsing");
 			// Note we are using the regexp matcher due to wanting to ignore case. The table header references offset still
 			// so that it appears exactly as was typed in by the user.
-			searchTerm = new RegExp(offset, "i");
+			searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			searchStart = Math.max(1, ($('#geode-search-all').prop('checked')) ? 1 : save.geodesCracked[whichPlayer]);
 			searchEnd = parseInt($('#geode-search-range').val()) + searchStart;
 			output += '<table class="output"><thead><tr><th colspan="' + (numColumns + 2) +
@@ -6464,7 +6500,7 @@ window.onload = function () {
 			$('#mystery-reset').html("Clear Search Results &amp; Reset Browsing");
 			// Note we are using the regexp matcher due to wanting to ignore case. The table header references offset still
 			// so that it appears exactly as was typed in by the user.
-			searchTerm = new RegExp(offset, "i");
+			searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			searchStart = Math.max(1, ($('#mystery-search-all').prop('checked')) ? 1 : save.mysteryBoxesOpened[whichPlayer]);
 			searchEnd = parseInt($('#mystery-search-range').val()) + searchStart;
 			output += '<table class="output"><thead><tr><th colspan="' + (numColumns + 2) +
@@ -8368,7 +8404,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			$('#book-next-month').prop("disabled", true);
 			$('#book-prev-year').prop("disabled", true);
 			$('#book-reset').html("Clear Search Results &amp; Reset Browsing");
-			var searchTerm = new RegExp(offset, "i");
+			var searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			var searchStart = ($('#book-search-all').prop('checked')) ? 0 : 7 * Math.floor((save.daysPlayed - 1) / 7);
 			var searchEnd = 112 * $('#book-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="3">Search results for &quot;' + offset + '&quot; over the ' +
@@ -8696,7 +8732,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			$('#prize-next').prop("disabled", true);
 			$('#prize-next-100').prop("disabled", true);
 			$('#prize-reset').html("Clear Search Results &amp; Reset Browsing");
-			var searchTerm = new RegExp(offset, "i");
+			var searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			var searchStart = Math.max(1, ($('#prize-search-all').prop('checked')) ? 1 : save.mysteryBoxesOpened[0]);
 			var searchEnd = parseInt($('#prize-search-range').val()) + searchStart;
 			output += '<table class="output"><thead><tr><th colspan="' + (numColumns + 2) +
@@ -8904,7 +8940,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			$('#raccoon-next').prop("disabled", true);
 			$('#raccoon-next-50').prop("disabled", true);
 			$('#raccoon-reset').html("Clear Search Results &amp; Reset Browsing");
-			var searchTerm = new RegExp(offset, "i");
+			var searchTerm = new RegExp(jaSearchToEnglish(offset), "i");
 			var searchStart = Math.max(1, ($('#raccoon-search-all').prop('checked')) ? 1 : save.mysteryBoxesOpened[0]);
 			var searchEnd = parseInt($('#raccoon-search-range').val()) + searchStart;
 			output += '<table class="output"><thead><tr><th colspan="' + (numColumns + 2) +
