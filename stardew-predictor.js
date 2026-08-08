@@ -225,8 +225,8 @@ window.onload = function () {
 		// for the traveling merchant but these are obsolete as of Stardew 1.6 and only still exist here for backwards
 		// compatibility when reading older saves. Note that the IDs are offset by 1 from the actual Object IDs
 		// and that there is a ton of repetition because of the specific logic of pre-1.4 stardew.
-		save.seasonNames = ['Spring', 'Summer', 'Fall', 'Winter'];
-		save.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+		save.seasonNames = ['春', '夏', '秋', '冬'];
+		save.dayNames = ['月曜', '火曜', '水曜', '木曜', '金曜', '土曜', '日曜'];
 		save.cartItems = {
 			789: 'Wild Horseradish',
 			788: 'Wild Horseradish',
