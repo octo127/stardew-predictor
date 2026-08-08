@@ -91,6 +91,21 @@ window.onload = function () {
 		return names.length ? ('(?:' + names.join('|') + ')') : query;
 	}
 
+	// Japanese display terms for weather and festival names shown on the weather calendar.
+	// Festival names follow the game's official localization (Data/Festivals/FestivalDates.ja-JP
+	// and Strings/1_6_Strings.ja-JP); "Night Market" follows the Japanese wiki page name.
+	var JA_TERMS = {
+		'Sun': '晴れ', 'Rain': '雨', 'Snow': '雪', 'Storm': '嵐', 'Wind': '風', 'Green Rain': '緑の雨',
+		'Egg Festival': 'エッグフェスティバル', 'Flower Dance': 'フラワーダンス',
+		'Luau': 'ルアウパーティー', 'Trout Derby': 'マス釣り大会',
+		'Moonlight Jellies': 'ゲッコウクラゲのダンス', 'Stardew Valley Fair': 'スターデューバレーまつり',
+		"Sprit's Eve": 'スピリットイブ', 'Festival of Ice': '氷まつり', 'Squid Fest': 'イカ釣りまつり',
+		'Night Market': '夜の市', 'Winter Star': '冬星祭'
+	};
+	function jaTerm(term) {
+		return JA_TERMS.hasOwnProperty(term) ? JA_TERMS[term] : term;
+	}
+
 	function wikify(item, page) {
 		// removing egg colors & quantity amounts; changing spaces to underscores
 		if (typeof(item) == "undefined") { return "undefined"; }
@@ -4740,7 +4755,7 @@ window.onload = function () {
 			searchEnd = 112 * $('#cart-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="4">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#cart-search-all').prop('checked')) ? 'first ' : 'next ') + $('#cart-search-range').val() + ' year(s)</th></tr>\n';
-			output += '<tr><th class="day">Day</th><th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th></tr>\n<tbody>';
+			output += '<tr><th class="day">日付</th><th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th></tr>\n<tbody>';
 			count = 0;
 			// Much of the logic here is duplicated from the browsing section, but comments related to it have been removed.
 			// Also, because output is purely a chronological list, we only need one RNG instance.
@@ -4828,7 +4843,7 @@ window.onload = function () {
 					}
 				}
 			}
-			output += '<tr><td colspan="4" class="count">Found ' + count + ' matching item(s)</td></tr></tbody></table>\n';
+			output += '<tr><td colspan="4" class="count">該当 ' + count + ' 件</td></tr></tbody></table>\n';
 		} else {
 			if (typeof(offset) === 'undefined' || offset === '') {
 				offset = 7 * Math.floor((save.daysPlayed - 1) / 7);
@@ -4887,11 +4902,11 @@ window.onload = function () {
 			}
 			output +=	'<th colspan="3" class="multi">' + save.dayNames[startDay + 2] + ' ' +
 				monthName + ' ' + (dayOfMonth + 7) + ', Year ' + year + '</th></tr>\n';
-			output += '<tr><th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th>';
+			output += '<tr><th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th>';
 			if (isNightMarket) {
-				output += '<th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th>';
+				output += '<th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th>';
 			}
-			output += '<th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th></tr>\n<tbody>';
+			output += '<th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th></tr>\n<tbody>';
 			// Multiple RNG instances because of the layout of the output table. rngMid only needed for Night Market
 			rngFirst = new CSRandom(save.gameID + offset + 5 + save.dayAdjust);
 			if (isNightMarket) {
@@ -4926,15 +4941,15 @@ window.onload = function () {
 					if (dayOfPrediction >= 100) { visitsNow--; }
 					if (dayOfPrediction >= 101) { visitsNow--; }
 					if (('Red Cabbage' in guaranteeCols[g].seen) || ('Red Cabbage Seeds' in guaranteeCols[g].seen)) {
-						output += '<td class="item">(In standard stock)</td><td>--</td><td>--</td>';
+						output += '<td class="item">(通常在庫に入荷)</td><td>--</td><td>--</td>';
 					} else if (visitsNow == 0) {
 						price = Math.max(guaranteeCols[g].rng.Next(1,11) * 100, save.objects["_485"].price * guaranteeCols[g].rng.Next(3,6));
 						qty = (guaranteeCols[g].rng.NextDouble() < 0.1) ? 5 : 1;
 						output += '<td class="item">' + wikify(save.objects["_485"].name) + "</td><td>" + qty + "</td><td>" + addCommas(price) + "g</td>";
 					} else if (visitsNow > 0) {
-						output += '<td class="item">(' + visitsNow + (visitsNow == 1 ? ' visit' : ' visits') + " left)</td><td>--</td><td>--</td>";
+						output += '<td class="item">(あと' + visitsNow + '回の来訪)</td><td>--</td><td>--</td>';
 					} else {
-						output += '<td class="item">(Already passed)</td><td>--</td><td>--</td>';
+						output += '<td class="item">(発動済み)</td><td>--</td><td>--</td>';
 					}
 				}
 				output += "</tr>";
@@ -4984,7 +4999,7 @@ window.onload = function () {
 					qty = 1;
 					price = '4000g';
 				} else {
-					item = '(None)';
+					item = '(なし)';
 					qty = '--';
 					price = '--';
 				}
@@ -4995,7 +5010,7 @@ window.onload = function () {
 						qty = 1;
 						price = '4000g';
 					} else {
-						item = '(None)';
+						item = '(なし)';
 						qty = '--';
 						price = '--';
 					}
@@ -5006,7 +5021,7 @@ window.onload = function () {
 					qty = 1;
 					price = '4000g';
 				} else {
-					item = '(None)';
+					item = '(なし)';
 					qty = '--';
 					price = '--';
 				}
@@ -5019,7 +5034,7 @@ window.onload = function () {
 				qty = 1;
 				price = '2500g';
 			} else {
-				item = '(None)';
+				item = '(なし)';
 				qty = '--';
 				price = '--';
 			}
@@ -5030,7 +5045,7 @@ window.onload = function () {
 					qty = 1;
 					price = '2500g';
 				} else {
-					item = '(None)';
+					item = '(なし)';
 					qty = '--';
 					price = '--';
 				}
@@ -5041,7 +5056,7 @@ window.onload = function () {
 				qty = 1;
 				price = '2500g';
 			} else {
-				item = '(None)';
+				item = '(なし)';
 				qty = '--';
 				price = '--';
 			}
@@ -5149,7 +5164,7 @@ window.onload = function () {
 			searchEnd = 112 * $('#cart-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="4">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#cart-search-all').prop('checked')) ? 'first ' : 'next ') + $('#cart-search-range').val() + ' year(s)</th></tr>\n';
-			output += '<tr><th class="day">Day</th><th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th></tr>\n<tbody>';
+			output += '<tr><th class="day">日付</th><th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th></tr>\n<tbody>';
 			count = 0;
 			// Much of the logic here is duplicated from the browsing section, but comments related to it have been removed.
 			// Also, because output is purely a chronological list, we only need one RNG instance.
@@ -5292,7 +5307,7 @@ window.onload = function () {
 					// Skill book not included yet until we can get more reliable identification of which book it is.
 				}
 			}
-			output += '<tr><td colspan="4" class="count">Found ' + count + ' matching item(s)</td></tr></tbody></table>\n';
+			output += '<tr><td colspan="4" class="count">該当 ' + count + ' 件</td></tr></tbody></table>\n';
 		} else {
 			if (typeof(offset) === 'undefined' || offset === '') {
 				offset = 7 * Math.floor((save.daysPlayed - 1) / 7);
@@ -5355,7 +5370,7 @@ window.onload = function () {
 			}
 			output += '</tr><tr>';
 			for (var d = 0; d < days.length; d++) {
-				output += '<th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th>';
+				output += '<th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th>';
 			}
 			output += '</tr><tbody>';
 			var cart = {};
@@ -5397,9 +5412,9 @@ window.onload = function () {
 						qty = (cart[d].rng.NextDouble() < 0.1) ? 5 : 1;
 						output += '<td class="item">' + wikify(name) + "</td><td>" + qty + "</td><td>" + addCommas(price) + "g</td>";
 					} else if (visitsNow > 0) {
-						output += '<td class="item">(' + visitsNow + (visitsNow == 1 ? ' visit' : ' visits') + " left)</td><td>--</td><td>--</td>";
+						output += '<td class="item">(あと' + visitsNow + '回の来訪)</td><td>--</td><td>--</td>';
 					} else {
-						output += '<td class="item">(Already passed)</td><td>--</td><td>--</td>';
+						output += '<td class="item">(発動済み)</td><td>--</td><td>--</td>';
 					}
 				}
 				output += "</tr>";
@@ -5420,7 +5435,7 @@ window.onload = function () {
 						price = 1000;
 						qty = (cart[d].rng.NextDouble() < 0.1) ? 5 : 1;
 					} else {
-						name = '(None)';
+						name = '(なし)';
 						price = '--';
 						qty = '--';
 					}
@@ -5434,7 +5449,7 @@ window.onload = function () {
 						price = 4000;
 						qty = 1;
 					} else {
-						name = '(None)';
+						name = '(なし)';
 						price = '--';
 						qty = '--';
 					}
@@ -5451,7 +5466,7 @@ window.onload = function () {
 						price = 2500;
 						qty = 1;
 					} else {
-						name = '(None)';
+						name = '(なし)';
 						price = '--';
 						qty = '--';
 					}
@@ -5470,7 +5485,7 @@ window.onload = function () {
 					price = 8000;
 					qty = 1;
 				} else {
-					name = '(None)';
+					name = '(なし)';
 					price = '--';
 					qty = '--';
 				}
@@ -5488,7 +5503,7 @@ window.onload = function () {
 						price = 30000;
 						qty = 1;
 					} else {
-						name = '(None)';
+						name = '(なし)';
 						price = '--';
 						qty = '--';
 					}
@@ -5508,7 +5523,7 @@ window.onload = function () {
 						price = 70000;
 						qty = 1;
 					} else {
-						name = '(None)';
+						name = '(なし)';
 						price = '--';
 						qty = '--';
 					}
@@ -5527,7 +5542,7 @@ window.onload = function () {
 					price = 110000;
 					qty = 1;
 				} else {
-					name = '(None)';
+					name = '(なし)';
 					price = '--';
 					qty = '--';
 				}
@@ -5543,7 +5558,7 @@ window.onload = function () {
 						price = 1000000;
 						qty = '∞';
 					} else {
-						name = '(None)';
+						name = '(なし)';
 						price = '--';
 						qty = '--';
 					}
@@ -5562,7 +5577,7 @@ window.onload = function () {
 					price = 6000;
 					qty = 1;
 				} else {
-					name = '(None)';
+					name = '(なし)';
 					price = '--';
 					qty = '--';
 				}
@@ -5606,7 +5621,7 @@ window.onload = function () {
 			searchEnd = 112 * $('#krobus-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="4">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#krobus-search-all').prop('checked')) ? 'first ' : 'next ') + $('#krobus-search-range').val() + ' year(s)</th></tr>\n';
-			output += '<tr><th class="day">Day</th><th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th></tr>\n<tbody>';
+			output += '<tr><th class="day">日付</th><th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th></tr>\n<tbody>';
 			count = 0;
 			// Much of the logic here is duplicated from the browsing section, but comments related to it have been removed.
 			// Also, because output is purely a chronological list, we only need one RNG instance.
@@ -5661,7 +5676,7 @@ window.onload = function () {
 					}
 				}
 			}
-			output += '<tr><td colspan="4" class="count">Found ' + count + ' matching item(s)</td></tr></tbody></table>\n';
+			output += '<tr><td colspan="4" class="count">該当 ' + count + ' 件</td></tr></tbody></table>\n';
 		} else {
 			if (typeof(offset) === 'undefined' || offset === '') {
 				offset = 7 * Math.floor((save.daysPlayed - 1) / 7);
@@ -5696,8 +5711,8 @@ window.onload = function () {
 				monthName + ' ' + (dayOfMonth + 3) + ', Year ' + year +	'</th>';
 			output +=	'<th colspan="3" class="multi">' + save.dayNames[5] + ' ' +
 				monthName + ' ' + (dayOfMonth + 6) + ', Year ' + year + '</th></tr>\n';
-			output += '<tr><th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th>';
-			output += '<th class="item">Item</th><th class="qty">Qty</th><th class="price">Price</th></tr>\n<tbody><tr>';
+			output += '<tr><th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th>';
+			output += '<th class="item">アイテム</th><th class="qty">個数</th><th class="price">価格</th></tr>\n<tbody><tr>';
 			item = ['None', 'None'];
 			price = [200, 0];
 			qty = [5, 5];
@@ -5771,7 +5786,7 @@ window.onload = function () {
 			searchEnd = 112 * $('#sandy-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="3">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#sandy-search-all').prop('checked')) ? 'first ' : 'next ') + $('#sandy-search-range').val() + ' year(s)</th></tr>\n';
-			output += '<tr><th class="day">Day</th><th class="shirt-item">Image</th><th class="item">Name</th></tr>\n<tbody>';
+			output += '<tr><th class="day">日付</th><th class="shirt-item">Image</th><th class="item">Name</th></tr>\n<tbody>';
 			count = 0;
 			// Much of the logic here is duplicated from the browsing section, but comments related to it have been removed.
 			console.log("Searching from " + searchStart + " to " + (searchStart + searchEnd));
@@ -5816,7 +5831,7 @@ window.onload = function () {
 					}
 				}
 			}
-			output += '<tr><td colspan="3" class="count">Found ' + count + ' matching item(s)</td></tr>';
+			output += '<tr><td colspan="3" class="count">該当 ' + count + ' 件</td></tr>';
 			output += '<tr><td colspan="3" class="legend">Note: <img src="blank.png" class="icon" id="no_sew" alt="No Sewing"> denotes items which cannot be made via ' + wikify("Tailoring") + '</td></tr>';
 			output += '</tbody></table>\n';
 		} else {
@@ -5960,7 +5975,7 @@ window.onload = function () {
 			output += '<table class="output"><thead><tr><th colspan="' + (numColumns + 2) +
 				'">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#geode-search-all').prop('checked')) ? 'first ' : 'next ') + $('#geode-search-range').val() + ' geodes</th></tr>\n';
-			output += '<tr><th class="item">Item</th>' +
+			output += '<tr><th class="item">アイテム</th>' +
 				'<th class="geode-result">Geode <a href="https://stardewvalleywiki.com/Geode">' +
 				'<img src="blank.png" class="icon" id="geode_r"></a></th>' +
 				'<th class="geode-result">Frozen Geode <a href="https://stardewvalleywiki.com/Frozen_Geode">' +
@@ -6234,7 +6249,7 @@ window.onload = function () {
 			}
 			output += '</tr>\n<tr>';
 			for (c = 0; c < numColumns; c++) {
-				output += '<th class="item">Item</th><th class="qty">Qty</th>';
+				output += '<th class="item">アイテム</th><th class="qty">個数</th>';
 			}
 			output += '</tr>\n<tbody>';
 			// We are going to predict all 4 types of geodes at once, so we have multiple variables and in several cases will
@@ -6506,7 +6521,7 @@ window.onload = function () {
 			output += '<table class="output"><thead><tr><th colspan="' + (numColumns + 2) +
 				'">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#mystery-search-all').prop('checked')) ? 'first ' : 'next ') + $('#mystery-search-range').val() + ' mystery boxes</th></tr>\n';
-			output += '<tr><th class="item">Item</th>' +
+			output += '<tr><th class="item">アイテム</th>' +
 				'<th class="mystery-result">Mystery Box <a href="https://stardewvalleywiki.com/Mystery_Box">' +
 				'<img src="blank.png" class="icon" id="mbox_b"></a></th>' +
 				'<th class="mystery-result">Golden Mystery Box <a href="https://stardewvalleywiki.com/Golden_Mystery_Box">' +
@@ -6783,7 +6798,7 @@ window.onload = function () {
 				'<img src="blank.png" class="icon" id="mbox_g"></a><br/>With Farming Mastery Perk</th>';
 			output += '</tr>\n<tr>';
 			for (c = 0; c < numColumns; c++) {
-				output += '<th class="item">Item</th><th class="qty">Qty</th>';
+				output += '<th class="item">アイテム</th><th class="qty">個数</th>';
 			}
 			output += '</tr>\n<tbody>';
 			for (g = 1; g <= pageSize; g++) {
@@ -7180,52 +7195,52 @@ var test = {};
 						}
 						// Fairy event chance +.007 if there is a full-grown fairy rose on the farm, but that is too volatile for us.
 						if (nextRoll < 0.01 && (month%4) < 3) {
-							thisEvent = '<img src="blank.png" class="event" id="event_f"><br/>Fairy';
+							thisEvent = '<img src="blank.png" class="event" id="event_f"><br/>妖精';
 						} else if (rng.NextDouble() < 0.01 && (day + 1 + save.dayAdjust) > 20) {
-							thisEvent = '<img src="blank.png" class="event" id="event_w"><br/>Witch';
+							thisEvent = '<img src="blank.png" class="event" id="event_w"><br/>魔女';
 						} else if (rng.NextDouble() < 0.01 && (day + 1 + save.dayAdjust) > 5) {
-							thisEvent = '<img src="blank.png" class="event" id="event_m"><br/>Meteor';
+							thisEvent = '<img src="blank.png" class="event" id="event_m"><br/>隕石';
 						} else if (rng.NextDouble() < 0.005) {
-							thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>Stone Owl';
+							thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>石のフクロウ';
 						} else if (rng.NextDouble() < 0.008 && year > 1) {
-							thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>Strange Capsule';
+							thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>奇妙なカプセル';
 						} else {
-							thisEvent = '<span class="none">&nbsp;<br/>(No event)<br/>&nbsp</span>';
+							thisEvent = '<span class="none">&nbsp;<br/>(イベントなし)<br/>&nbsp</span>';
 						}
 					} else {
 						rng = new CSRandom(save.gameID / 2 + day + 1 + save.dayAdjust);
 						if (compareSemVer(save.version, "1.3") < 0 && save.canHaveChildren && rng.NextDouble() < 0.05) {
 							thisEvent = '<img src="blank.png" class="event" id="event_b"><br/>"Want a Baby?"';
 						} else if (rng.NextDouble() < 0.01 && (month%4) < 3) {
-							thisEvent = '<img src="blank.png" class="event" id="event_f"><br/>Fairy';
+							thisEvent = '<img src="blank.png" class="event" id="event_f"><br/>妖精';
 						} else if (rng.NextDouble() < 0.01) {
-							thisEvent = '<img src="blank.png" class="event" id="event_w"><br/>Witch';
+							thisEvent = '<img src="blank.png" class="event" id="event_w"><br/>魔女';
 						} else if (rng.NextDouble() < 0.01) {
-							thisEvent = '<img src="blank.png" class="event" id="event_m"><br/>Meteor';
+							thisEvent = '<img src="blank.png" class="event" id="event_m"><br/>隕石';
 						} else {
 							if (compareSemVer(save.version, "1.5") < 0) {
 								if (rng.NextDouble() < 0.01 && year > 1) {
-									thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>Strange Capsule';
+									thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>奇妙なカプセル';
 								} else if (rng.NextDouble() < 0.01) {
-									thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>Stone Owl';
+									thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>石のフクロウ';
 								} else {
-									thisEvent = '<span class="none">&nbsp;<br/>(No event)<br/>&nbsp</span>';
+									thisEvent = '<span class="none">&nbsp;<br/>(イベントなし)<br/>&nbsp</span>';
 								}
 							} else if (compareSemVer(save.version, "1.5.3") < 0) {
 								if (rng.NextDouble() < 0.008 && year > 1) {
-									thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>Strange Capsule';
+									thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>奇妙なカプセル';
 								} else if (rng.NextDouble() < 0.008) {
-									thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>Stone Owl';
+									thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>石のフクロウ';
 								} else {
-									thisEvent = '<span class="none">&nbsp;<br/>(No event)<br/>&nbsp</span>';
+									thisEvent = '<span class="none">&nbsp;<br/>(イベントなし)<br/>&nbsp</span>';
 								}
 							} else {
 								if (rng.NextDouble() < 0.005) {
-									thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>Stone Owl';
+									thisEvent = '<img src="blank.png" class="event" id="event_o"><br/>石のフクロウ';
 								} else if (rng.NextDouble() < 0.008 && year > 1) {
-									thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>Strange Capsule';
+									thisEvent = '<img src="blank.png" class="event" id="event_c"><br/>奇妙なカプセル';
 								} else {
-									thisEvent = '<span class="none">&nbsp;<br/>(No event)<br/>&nbsp</span>';
+									thisEvent = '<span class="none">&nbsp;<br/>(イベントなし)<br/>&nbsp</span>';
 								}
 							}
 						}
@@ -8192,7 +8207,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 					'<img src="blank.png" class="icon" alt="Clear" id="w_rain">' :
 					'<img src="blank.png" class="icon" alt="Umbrella in rain" id="w_sun">';
 				output += '<td class="' + tclass + '"><span class="date"> ' + (day - offset) + '</span><br/>' +
-					'<span class="cell">' + icon + weatherTown + '</span></td>';
+					'<span class="cell">' + icon + jaTerm(weatherTown) + '</span></td>';
 			}
 			output += "</tr>\n";
 		}
@@ -8409,7 +8424,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			var searchEnd = 112 * $('#book-search-range').val();
 			output += '<table class="output"><thead><tr><th colspan="3">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#book-search-all').prop('checked')) ? 'first ' : 'next ') + $('#book-search-range').val() + ' year(s)</th></tr>\n';
-			output += '<tr><th class="day">Day</th><th class="item">Item</th><th class="price">Price</th></tr>\n<tbody>';
+			output += '<tr><th class="day">日付</th><th class="item">アイテム</th><th class="price">価格</th></tr>\n<tbody>';
 			var count = 0;
 			for (offset = searchStart; offset < searchStart + searchEnd; offset += 28) {
 				var month = Math.floor(offset / 28);
@@ -8474,7 +8489,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 					}
 				}
 			}
-			output += '<tr><td colspan="3" class="count">Found ' + count + ' matching item(s)</td></tr></tbody></table>\n';
+			output += '<tr><td colspan="3" class="count">該当 ' + count + ' 件</td></tr></tbody></table>\n';
 		} else {
 			if (typeof(offset) === 'undefined') {
 				offset = 28 * Math.floor(save.daysPlayed/28);
@@ -8520,7 +8535,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			}
 			output += '</tr><tr>';
 			for (var d = 0; d < days.length; d++) {
-				output += '<th class="item">Item</th><th class="price">Price</th>';
+				output += '<th class="item">アイテム</th><th class="price">価格</th>';
 			}
 			output += '</tr></thead><tbody>';
 			// Want to color these based on current month
@@ -8738,7 +8753,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			output += '<table class="output"><thead><tr><th colspan="' + (numColumns + 2) +
 				'">Search results for &quot;' + offset + '&quot; over the ' +
 				(($('#prize-search-all').prop('checked')) ? 'first ' : 'next ') + $('#prize-search-range').val() + ' prize claims</th></tr>\n';
-			output += '<tr><th class="item">Item</th><th class="mystery-result">Prize Received</th></tr><tbody>';
+			output += '<tr><th class="item">アイテム</th><th class="mystery-result">Prize Received</th></tr><tbody>';
 			var count = 0;
 			var searchResults = {};
 			// no searching yet.
@@ -8812,7 +8827,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			$('#prize-search-all').prop('checked', false);
 			output += '<table class="output"><thead><tr><th rowspan="2" class="index">Num Open</th>' +
 				'<th colspan="2" class="prize-result">Prize Received</th>';
-			output += '</tr><tr><th class="item">Item</th><th class="qty">Qty</th></tr><tbody>';
+			output += '</tr><tr><th class="item">アイテム</th><th class="qty">個数</th></tr><tbody>';
 			var rng;
 			if (typeof(save.mp_ids) !== 'undefined') {
 				rng = new CSRandom(getRandomSeedFromBigInts(bigInt(save.gameID), save.mp_ids[whichPlayer]));
@@ -8982,7 +8997,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 				'<th colspan="2" class="raccoon-result">First Requested Item</th>' +
 				'<th colspan="2" class="raccoon-result">Second Requested Item</th>' +
 				'<th colspan="2" class="raccoon-result">Reward Received</th>';
-			output += '</tr><tr><th class="item">Item</th><th class="qty">Qty</th><th class="item">Item</th><th class="qty">Qty</th><th class="item">Item</th><th class="qty">Qty</th></tr><tbody>';
+			output += '</tr><tr><th class="item">アイテム</th><th class="qty">個数</th><th class="item">アイテム</th><th class="qty">個数</th><th class="item">アイテム</th><th class="qty">個数</th></tr><tbody>';
 			// Some options are seasonal and sometimes multiple rolls must be made for duplicate avoidance.
 			// As a result, we run 4 copies of the rng.
 			for (var g = 1; g <= pageSize; g++) {
