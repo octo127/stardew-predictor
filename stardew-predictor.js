@@ -4666,7 +4666,6 @@ window.onload = function () {
 
 	function predictCart(isSearch, offset) {
 		// logic from StardewValley.Utility.getTravelingMerchantStock()
-		// Note, we only handle Y1 Guarantee in 1.6 or later saves
 		var output = '',
 			month,
 			monthName,
@@ -4729,6 +4728,25 @@ window.onload = function () {
 							count++;
 							output += '<tr><td>' + dayOfWeek + ' ' + monthName + ' ' + dayOfMonth + ', Year ' + year + '</td><td>' +
 								wikify(item.name) + "</td><td>" + item.qty + "</td><td>" + addCommas(item.price) + "g</td>";
+						}
+					}
+					// Y1 Guarantee check happens after the standard stock but before furniture; the game
+					// only rolls the forced Red Cabbage Seeds if no Red Cabbage (Seeds) was stocked naturally.
+					if (save.originalGuarantee >= 0 && !('Red Cabbage' in seenItems) && !('Red Cabbage Seeds' in seenItems)) {
+						var dayOfPrediction = offset + days[i] + save.dayAdjust;
+						var visitsNow = save.originalGuarantee - Math.floor(dayOfPrediction/7) - Math.floor((dayOfPrediction + 2)/7);
+						if (dayOfPrediction >= 99) { visitsNow--; }
+						if (dayOfPrediction >= 100) { visitsNow--; }
+						if (dayOfPrediction >= 101) { visitsNow--; }
+						if (visitsNow == 0) {
+							item = { name: save.objects["_485"].name,
+								price: Math.max(rngFirst.Next(1,11) * 100, save.objects["_485"].price * rngFirst.Next(3,6)),
+								qty: (rngFirst.NextDouble() < 0.1) ? 5 : 1 };
+							if (searchTerm.test(item.name)) {
+								count++;
+								output += '<tr><td>' + dayOfWeek + ' ' + monthName + ' ' + dayOfMonth + ', Year ' + year + '</td><td>' +
+									wikify(item.name) + "</td><td>" + item.qty + "</td><td>" + addCommas(item.price) + "g</td></tr>";
+							}
 						}
 					}
 					slot = -1;
@@ -4857,6 +4875,33 @@ window.onload = function () {
 				}
 				item = getCartItem(rngLast, seenItemsLast);
 				output += '<td class="item">' + wikify(item.name) + "</td><td>" + item.qty + "</td><td>" + addCommas(item.price) + "g</td></tr>";
+			}
+			// Y1 Guarantee check happens after the standard stock but before furniture; the game
+			// only rolls the forced Red Cabbage Seeds if no Red Cabbage (Seeds) was stocked naturally.
+			if (save.originalGuarantee >= 0) {
+				output += "<tr><td>Year 1 Guarantee</td>";
+				var guaranteeCols = [ { rng: rngFirst, day: 5, seen: seenItemsFirst } ];
+				if (isNightMarket) { guaranteeCols.push({ rng: rngMid, day: 6, seen: seenItemsMid }); }
+				guaranteeCols.push({ rng: rngLast, day: 7, seen: seenItemsLast });
+				for (var g = 0; g < guaranteeCols.length; g++) {
+					var dayOfPrediction = offset + guaranteeCols[g].day + save.dayAdjust;
+					var visitsNow = save.originalGuarantee - Math.floor(dayOfPrediction/7) - Math.floor((dayOfPrediction + 2)/7);
+					if (dayOfPrediction >= 99) { visitsNow--; }
+					if (dayOfPrediction >= 100) { visitsNow--; }
+					if (dayOfPrediction >= 101) { visitsNow--; }
+					if (('Red Cabbage' in guaranteeCols[g].seen) || ('Red Cabbage Seeds' in guaranteeCols[g].seen)) {
+						output += '<td class="item">(In standard stock)</td><td>--</td><td>--</td>';
+					} else if (visitsNow == 0) {
+						price = Math.max(guaranteeCols[g].rng.Next(1,11) * 100, save.objects["_485"].price * guaranteeCols[g].rng.Next(3,6));
+						qty = (guaranteeCols[g].rng.NextDouble() < 0.1) ? 5 : 1;
+						output += '<td class="item">' + wikify(save.objects["_485"].name) + "</td><td>" + qty + "</td><td>" + addCommas(price) + "g</td>";
+					} else if (visitsNow > 0) {
+						output += '<td class="item">(' + visitsNow + (visitsNow == 1 ? ' visit' : ' visits') + " left)</td><td>--</td><td>--</td>";
+					} else {
+						output += '<td class="item">(Already passed)</td><td>--</td><td>--</td>';
+					}
+				}
+				output += "</tr>";
 			}
 			// Furniture uses StardewValley.Utility.getRandomFurniture() & StardewValley.Utility.isFurnitureOffLimitsForSale()
 			// Rather than fully emulating both of those functions, we will simply make sure the save.cartFurniture structure
