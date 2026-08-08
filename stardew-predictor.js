@@ -100,7 +100,8 @@ window.onload = function () {
 		'Luau': 'ルアウパーティー', 'Trout Derby': 'マス釣り大会',
 		'Moonlight Jellies': 'ゲッコウクラゲのダンス', 'Stardew Valley Fair': 'スターデューバレーまつり',
 		"Sprit's Eve": 'スピリットイブ', 'Festival of Ice': '氷まつり', 'Squid Fest': 'イカ釣りまつり',
-		'Night Market': '夜の市', 'Winter Star': '冬星祭'
+		'Night Market': '夜の市', 'Winter Star': '冬星祭',
+		'Spring': '春', 'Summer': '夏', 'Fall': '秋', 'Winter': '冬'
 	};
 	function jaTerm(term) {
 		return JA_TERMS.hasOwnProperty(term) ? JA_TERMS[term] : term;
@@ -225,14 +226,14 @@ window.onload = function () {
 		// farmTypes changed to object after 1.6 added ability for string keys
 		var output = '',
 			farmTypes = {
-				0: 'Standard',
-				1: 'Riverland',
-				2: 'Forest',
-				3: 'Hill-top',
-				4: 'Wilderness',
-				5: 'Four Corners',
-				6: 'Beach',
-				"MeadowlandsFarm": 'Meadowlands',
+				0: '標準',
+				1: 'リバーランド',
+				2: '森',
+				3: 'ヒルトップ',
+				4: 'ワイルダネス',
+				5: 'フォー・コーナーズ',
+				6: 'ビーチ',
+				"MeadowlandsFarm": 'メドウランド',
 			};
 		// Although this stuff isn't really part of the save file, the save object is global and using it for
 		// this meta-information lets all the tab functions have access.
@@ -3515,7 +3516,7 @@ window.onload = function () {
 			// than the "not active" value of -1 which the game uses.
 			var vgText = $(xmlDoc).find('SaveGame > visitsUntilY1Guarantee').text();
 			save.visitsUntilY1Guarantee = (vgText === '') ? -1 : Number(vgText);
-			save.farmName = $(xmlDoc).find('SaveGame > player > farmName').html() + ' Farm (' + farmTypes[$(xmlDoc).find('whichFarm').text()] + ')';
+			save.farmName = $(xmlDoc).find('SaveGame > player > farmName').html() + '農場(' + farmTypes[$(xmlDoc).find('whichFarm').text()] + ')';
 			save.names.push($(xmlDoc).find('SaveGame > player > name').html());
 			save.gender.push($(xmlDoc).find('SaveGame > player > gender').text());
 			// stats can be in multiple places. In 1.2 they were under SaveGame, but in 1.3 they moved under the
@@ -3644,8 +3645,8 @@ window.onload = function () {
 			if (save.mysteryBoxesOpened.length === 0) { save.mysteryBoxesOpened.push(0); }
 			// Date originally used XXForSaveGame elements, but those were not always present on saves downloaded from upload.farm
 			save.year = Number($(xmlDoc).find('SaveGame > year').first().text());
-			save.niceDate = 'Day ' + Number($(xmlDoc).find('SaveGame > dayOfMonth').text()) + ' of ' +
-				capitalize($(xmlDoc).find('SaveGame > currentSeason').html()) + ', Year ' + save.year;
+			save.niceDate = save.year + '年目 ' + jaTerm(capitalize($(xmlDoc).find('SaveGame > currentSeason').html())) +
+				' ' + Number($(xmlDoc).find('SaveGame > dayOfMonth').text()) + '日';
 			if (compareSemVer(save.version, "1.5") >= 0) {
 				save.hardmodeMines = Number($(xmlDoc).find('SaveGame > minesDifficulty').text()) > 0;
 			}
@@ -3898,102 +3899,102 @@ window.onload = function () {
 		if (save.gameID === null) {
 			return '<span class="error">Fatal Error: Problem reading save file and no ID passed via query string.</span>';
 		}
-		output += '<h3>Save State Summary</h3><p>Important information taken from the save file which is needed for predictions. Anything that was overridden by <a href="#advanced_usage">a URL parameter</a> is marked with an asterisk (*).</p>';
+		output += '<h3>セーブ状態の要約</h3><p>予測に必要な情報をセーブファイルから読み取ったものです。<a href="#advanced_usage">URLパラメータ</a>で上書きされた項目にはアスタリスク(*)が付きます。</p>';
 		output += '<table class="summary"><tr><td>';
-		output += '<span class="result">' + (wasChanged.gameID ? "*":'') + 'Game ID: ' + save.gameID + '</span><br/>';
-		output += '<span class="result">' + (wasChanged.version ? "*":'') + 'Stardew version: ' + save.version + '</span><br/>';
-		if (save.names.length === 0) { save.names[0] = "Unknown Farmer"; }
-		output += '<span class="result">Farmer ' + save.names[0] + ' of ' + save.farmName + '</span><br/>';
+		output += '<span class="result">' + (wasChanged.gameID ? "*":'') + 'ゲームID: ' + save.gameID + '</span><br/>';
+		output += '<span class="result">' + (wasChanged.version ? "*":'') + 'Stardewバージョン: ' + save.version + '</span><br/>';
+		if (save.names.length === 0) { save.names[0] = "名無しの農場主"; }
+		output += '<span class="result">農場主 ' + save.names[0] + ' — ' + save.farmName + '</span><br/>';
 		if (save.names.length > 1) {
-			output += '<span class="result">Farmhands: ' + save.names.slice(1).join(', ') + '</span><br/>';
+			output += '<span class="result">住人: ' + save.names.slice(1).join(', ') + '</span><br/>';
 		}
 		if (save.niceDate !== '') {
-			output += '<span class="result">' + save.niceDate + ' (' + save.daysPlayed + ' days played)</span><br/>\n';
+			output += '<span class="result">' + save.niceDate + '(通算' + save.daysPlayed + '日)</span><br/>\n';
 		} else {
 			output += '<span class="result">' + ((wasChanged.daysPlayed || wasChanged.dayAdjust) ? '*' : '') +
-				(save.daysPlayed + save.dayAdjust) + ' days played</span><br/>\n';
+				'通算' + (save.daysPlayed + save.dayAdjust) + '日</span><br/>\n';
 		}
-		output += '<span class="result">' + (wasChanged.geodesCracked ? "*":'') + 'Geodes cracked: ';
+		output += '<span class="result">' + (wasChanged.geodesCracked ? "*":'') + 'ジオードを割った回数: ';
 		for (var i = 0; i < save.names.length; i++) {
 			output += save.geodesCracked[i] + ' (' + save.names[i] + ') ';
 		}
 		output += '</span><br/>';
 		if (compareSemVer(save.version, "1.6") >= 0) {
-			output += '<span class="result">' + (wasChanged.mysteryBoxesOpened ? "*":'') + 'Mystery Boxes opened: ';
+			output += '<span class="result">' + (wasChanged.mysteryBoxesOpened ? "*":'') + 'ミステリーボックス開封数: ';
 			for (var i = 0; i < save.names.length; i++) {
 				output += save.mysteryBoxesOpened[i] + ' (' + save.names[i] + ') ';
 			}
 			output += '</span><br/>';
-			output += '<span class="result">' + (wasChanged.ticketPrizesClaimed ? "*":'') + 'Prize Tickets claimed: ';
+			output += '<span class="result">' + (wasChanged.ticketPrizesClaimed ? "*":'') + '景品チケット交換数: ';
 			for (var i = 0; i < save.names.length; i++) {
 				output += save.ticketPrizesClaimed[i] + ' (' + save.names[i] + ') ';
 			}
 			output += '</span><br/>';
 		}
 		if (compareSemVer(save.version, "1.5") >= 0) {
-			output += '<span class="result">' + (wasChanged.timesEnchanted ? "*":'') + 'Times enchanted: ';
+			output += '<span class="result">' + (wasChanged.timesEnchanted ? "*":'') + 'エンチャント回数: ';
 			for (var i = 0; i < save.names.length; i++) {
 				output += save.timesEnchanted[i] + ' (' + save.names[i] + ') ';
 			}
 			output += '</span><br/>';
 		}
-		output += '<span class="result">' + (wasChanged.trashCansChecked ? "*":'') + 'Trash cans checked: ';
+		output += '<span class="result">' + (wasChanged.trashCansChecked ? "*":'') + 'ゴミ箱を漁った回数: ';
 		for (var i = 0; i < save.names.length; i++) {
 			output += save.trashCansChecked[i] + ' (' + save.names[i] + ') ';
 		}
 		output += '</span><br/>';
-		output += '<span class="result">' + (wasChanged.deepestMineLevel ? "*":'') + 'Deepest mine level: ' + Math.min(120, save.deepestMineLevel) + '</span><br/>';
-		output += '<span class="result">' + (wasChanged.timesFedRaccoons ? "*":'') + 'Times fed raccoons: ' + save.timesFedRaccoons + '</span><br/>';
-		output += '<span class="result">' + (wasChanged.visitsUntilY1Guarantee ? "*":'') + 'Cart Y1 Guarantee: ';
+		output += '<span class="result">' + (wasChanged.deepestMineLevel ? "*":'') + '鉱山の最深到達階: ' + Math.min(120, save.deepestMineLevel) + '</span><br/>';
+		output += '<span class="result">' + (wasChanged.timesFedRaccoons ? "*":'') + 'アライグマに渡した回数: ' + save.timesFedRaccoons + '</span><br/>';
+		output += '<span class="result">' + (wasChanged.visitsUntilY1Guarantee ? "*":'') + '行商人の1年目保証: ';
 		if (save.visitsUntilY1Guarantee >= 0) {
-			output += save.visitsUntilY1Guarantee + " visits left";
+			output += 'あと' + save.visitsUntilY1Guarantee + '回の来訪';
 		} else if (save.originalGuarantee > 0) {
-			output += save.originalGuarantee + " visits originally rolled";
+			output += '当初ロール値 ' + save.originalGuarantee + ' 回';
 		} else {
-			output += " not active or already past";
+			output += '無効または発動済み';
 		}
 		output += '</span><br/>';
-		output += '<span class="result">' + (wasChanged.dailyLuck ? "*":'') + 'Daily Luck is assumed to be ' + save.dailyLuck;
+		output += '<span class="result">' + (wasChanged.dailyLuck ? "*":'') + '日運の仮定値: ' + save.dailyLuck;
 		if (save.hasSpecialCharm) {
 			save.dailyLuck += 0.025;
-			output += ' (' + save.dailyLuck.toFixed(3) + ' with charm)';
+			output += '(お守り込みで ' + save.dailyLuck.toFixed(3) + ')';
 		}
 		output += '</span><br/>';
-		output += '<span class="result">' + (wasChanged.luckLevel ? "*":'') + 'Luck buffs are assumed to be ' + save.luckLevel + '</span><br/>';
+		output += '<span class="result">' + (wasChanged.luckLevel ? "*":'') + '運バフの仮定値: ' + save.luckLevel + '</span><br/>';
 		output += '</td><td>';
 
-		output += '<span class="result">' + (wasChanged.useLegacyRandom ? "*":'') + 'Legacy RNG Seeding is ' + (save.useLegacyRandom ? "on" : "off") +
+		output += '<span class="result">' + (wasChanged.useLegacyRandom ? "*":'') + 'レガシー乱数シード: ' + (save.useLegacyRandom ? "オン" : "オフ") +
 			'</span><br/>';
-		output += '<span class="result">' + (wasChanged.quarryUnlocked ? "*":'') + 'Quarry is ' + (save.quarryUnlocked ? "" : "not") +
-			' unlocked</span><br/>';
-		output += '<span class="result">' + (wasChanged.desertUnlocked ? "*":'') + 'Desert is ' + (save.desertUnlocked ? "" : "not") +
-			' unlocked</span><br/>';
-		output += '<span class="result">' + (wasChanged.greenhouseUnlocked ? "*":'') + 'Greenhouse is ' + (save.greenhouseUnlocked ? "" : "not") +
-			' unlocked</span><br/>';
-		output += '<span class="result">' + (wasChanged.ccComplete ? "*":'') + 'Community Center is ' + (save.ccComplete ? "" : "not") +
-			' complete</span><br/>';
-		output += '<span class="result">' + (wasChanged.jojaComplete ? "*":'') + 'Joja Community Development is ' + (save.jojaComplete ? "" : "not") +
-			' complete</span><br/>';
-		output += '<span class="result">' + (wasChanged.theaterUnlocked ? "*":'') + 'Theater is ' + (save.theaterUnlocked ? "" : "not") +
-			' unlocked</span><br/>';
+		output += '<span class="result">' + (wasChanged.quarryUnlocked ? "*":'') + '採石場: ' + (save.quarryUnlocked ? "解放済み" : "未解放") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.desertUnlocked ? "*":'') + '砂漠: ' + (save.desertUnlocked ? "解放済み" : "未解放") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.greenhouseUnlocked ? "*":'') + '温室: ' + (save.greenhouseUnlocked ? "修理済み" : "未修理") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.ccComplete ? "*":'') + '公民館: ' + (save.ccComplete ? "完成" : "未完成") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.jojaComplete ? "*":'') + 'Jojaコミュニティ開発: ' + (save.jojaComplete ? "完了" : "未完了") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.theaterUnlocked ? "*":'') + '映画館: ' + (save.theaterUnlocked ? "解放済み" : "未解放") +
+			'</span><br/>';
 		if (compareSemVer(save.version, "1.3") < 0) {
-			output += '<span class="result">' + (wasChanged.canHaveChildren ? "*":'') + 'Farmer can' + (save.canHaveChildren ? "" : "not") +
-			' have more children</span><br/>';
+			output += '<span class="result">' + (wasChanged.canHaveChildren ? "*":'') + '子どもをさらに持てる: ' + (save.canHaveChildren ? "はい" : "いいえ") +
+			'</span><br/>';
 		}
-		output += '<span class="result">' + (wasChanged.hasFurnaceRecipe ? "*":'') + 'Farmer ' + (save.hasFurnaceRecipe ? "has" : "does not have") +
-			' furnace recipe</span><br/>';
-		output += '<span class="result">' + (wasChanged.hasSpecialCharm ? "*":'') + 'Farmer ' + (save.hasSpecialCharm ? "has" : "does not have") +
-			' special luck charm</span><br/>';
-		output += '<span class="result">' + (wasChanged.hasGarbageBook ? "*":'') + 'Farmer has ' + (save.hasGarbageBook ? "" : "not") +
-			' read <span class="book">The Alleyway Buffet</span></span><br/>';
-		output += '<span class="result">' + (wasChanged.gotMysteryBook ? "*":'') + 'Farmer has ' + (save.gotMysteryBook ? "" : "not") +
-			' gotten <span class="book">Mystery Book</span> from Mystery Boxes</span><br/>';
-		output += '<span class="result">' + (wasChanged.leoMoved ? "*":'') + 'Leo has ' + (save.leoMoved ? "" : "not") +
-			' moved to the Valley</span><br/>';
-		output += '<span class="result">' + (wasChanged.hardmodeMines ? "*":'') + 'Mines are ' + (save.hardmodeMines ? "" : "not") +
-			' currently hard difficulty</span><br/>';
-		output += '<span class="result">' + (wasChanged.qiCropsActive ? "*":'') + 'Qi Crops special order is ' + (save.qiCropsActive ? "" : "not") +
-			' active</span><br/>';
+		output += '<span class="result">' + (wasChanged.hasFurnaceRecipe ? "*":'') + 'かまどのレシピ: ' + (save.hasFurnaceRecipe ? "習得済み" : "未習得") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.hasSpecialCharm ? "*":'') + '幸運のお守り: ' + (save.hasSpecialCharm ? "所持" : "未所持") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.hasGarbageBook ? "*":'') + '<span class="book">路地裏のビュッフェ</span>: ' + (save.hasGarbageBook ? "読了" : "未読") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.gotMysteryBook ? "*":'') + 'ミステリーボックスからの<span class="book">ミステリーの本</span>: ' + (save.gotMysteryBook ? "入手済み" : "未入手") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.leoMoved ? "*":'') + 'レオの谷への引っ越し: ' + (save.leoMoved ? "済み" : "まだ") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.hardmodeMines ? "*":'') + '鉱山のハード難易度: ' + (save.hardmodeMines ? "有効" : "無効") +
+			'</span><br/>';
+		output += '<span class="result">' + (wasChanged.qiCropsActive ? "*":'') + 'Qi作物の特別依頼: ' + (save.qiCropsActive ? "進行中" : "非進行") +
+			'</span><br/>';
 		output += '</td></tr></table>';
 		return output;
 	}
