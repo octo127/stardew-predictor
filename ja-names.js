@@ -1870,4 +1870,17 @@ var JA_NAMES = {
 "Welwick": "ウェルウィック",
 "Willy": "ウィリー",
 "Wizard": "魔術師",
+// Aliases for older English names used by the predictor item tables (renamed or
+// re-encoded in 1.6) so they still resolve to the official Japanese names.
+"Cookie": "クッキー",
+"Good Grief Shirt": "「やれやれ」シャツ",
+"PiÃ±a Colada": "ピニャコラーダ",
+"GreenRainWeeds0": "グリーンレインのタネ",
+"GreenRainWeeds1": "グリーンレインのタネ",
+"GreenRainWeeds2": "グリーンレインのタネ",
+"GreenRainWeeds3": "グリーンレインのタネ",
+"GreenRainWeeds4": "グリーンレインのタネ",
+"GreenRainWeeds5": "グリーンレインのタネ",
+"GreenRainWeeds6": "グリーンレインのタネ",
+"GreenRainWeeds7": "グリーンレインのタネ",
 };
