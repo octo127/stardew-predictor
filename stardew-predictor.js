@@ -3460,7 +3460,10 @@ window.onload = function () {
 			save.ticketPrizesClaimed = [];
 			save.timesEnchanted = [];
 			save.trashCansChecked = [];
-			save.visitsUntilY1Guarantee = Number($(xmlDoc).find('SaveGame > visitsUntilY1Guarantee').text());
+			// The element is missing entirely from pre-1.5 saves, and Number('') would give 0 rather
+			// than the "not active" value of -1 which the game uses.
+			var vgText = $(xmlDoc).find('SaveGame > visitsUntilY1Guarantee').text();
+			save.visitsUntilY1Guarantee = (vgText === '') ? -1 : Number(vgText);
 			save.farmName = $(xmlDoc).find('SaveGame > player > farmName').html() + ' Farm (' + farmTypes[$(xmlDoc).find('whichFarm').text()] + ')';
 			save.names.push($(xmlDoc).find('SaveGame > player > name').html());
 			save.gender.push($(xmlDoc).find('SaveGame > player > gender').text());
