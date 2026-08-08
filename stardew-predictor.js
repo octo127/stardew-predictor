@@ -8135,6 +8135,14 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 								}
 							}
 							break;
+						case 3:
+							// Same synced roll as spring/fall but with the higher winter threshold
+							// (WinterSnow entry in Data/LocationContexts).
+							rng = new CSRandom(getRandomSeed(getHashFromString("location_weather"), save.gameID, day-1));
+							if (rng.NextDouble() < 0.63) {
+								weatherTown = 'Snow';
+							}
+							break;
 					}
 				}
 				if (day < save.daysPlayed) {
@@ -8144,7 +8152,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 				} else {
 					tclass = "future";
 				}
-				var icon = (weatherTown == 'Rain' || weatherTown == 'Green Rain' || weatherTown == 'Storm') ?
+				var icon = (weatherTown == 'Rain' || weatherTown == 'Green Rain' || weatherTown == 'Storm' || weatherTown == 'Snow') ?
 					'<img src="blank.png" class="icon" alt="Clear" id="w_rain">' :
 					'<img src="blank.png" class="icon" alt="Umbrella in rain" id="w_sun">';
 				output += '<td class="' + tclass + '"><span class="date"> ' + (day - offset) + '</span><br/>' +
@@ -8152,7 +8160,7 @@ Object.keys(test).forEach(function(key, index) { if (test[key].s > 0 && test[key
 			}
 			output += "</tr>\n";
 		}
-		output += '<tr><td colspan="7" class="legend"><img src="blank.png" class="icon" alt="Umbrella in rain" id="w_rain"> Rainy weather. "Rain" could become Storm.<br/><img src="blank.png" class="icon" alt="Shining Sun" id="w_sun"> Clear weather. "Sun" could become Wind or Snow.</td></tr>';
+		output += '<tr><td colspan="7" class="legend"><img src="blank.png" class="icon" alt="Umbrella in rain" id="w_rain"> Rainy weather. "Rain" could become Storm.<br/><img src="blank.png" class="icon" alt="Shining Sun" id="w_sun"> Clear weather. "Sun" could become Wind.</td></tr>';
 		output += "</tbody></table>\n";
 
 		return output;
